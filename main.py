@@ -2,8 +2,8 @@ from pygame import Rect
 
 ground = Rect(10,350,500,30)
 
-alien = Actor('alienzitos')
-alien.pos = 100, 56
+shaolin = Actor('shaolin')
+shaolin.pos = 100, 56
 
 WIDTH = 800
 HEIGHT = 500
@@ -14,10 +14,13 @@ class Moveset:
     falling = False
     jumpSpeed = 0
     jumpInitial = 0      # força inicial
-    jumpMax = 70
-    jumpHoldBoost = 4   # quanto continua subindo se segurar
-    jumpMaxHoldTime = 16   # limite de "segurar para pular mais"
-    holdCounter = 0
+    jumpMax = 30
+    #jumpHoldBoost = 4   # quanto continua subindo se segurar
+    #jumpMaxHoldTime = 16   # limite de "segurar para pular mais"
+    #holdCounter = 0
+
+    leftR = False
+    rightR = False
 
 class Physics:
     gravity = 5
@@ -29,14 +32,15 @@ phys = Physics()
 
 def draw():
     screen.clear()
-    alien.draw()
+    shaolin.draw()
     screen.draw.rect(ground, (255, 255, 255))
 
 
 def update():
     colisao()
+    normal_stance()
     if phys.collisionVertical == False:
-        alien.y += phys.gravity
+        shaolin.y += phys.gravity
         
         #print('caindo')
 #    if phys.collisionVertical == True:
@@ -47,10 +51,9 @@ def update():
         print(move.jumpSpeed)
         move.buttonPressed = True
         
-        if move.jumpSpeed != move.jumpMax and move.buttonPressed == True and move.falling == False:
-            alien.y -= 10
-            #move.jumping = True
-            #print('parou')
+        if move.jumpSpeed != move.jumpMax  and move.falling == False:
+            shaolin.y -= 15
+
     elif not keyboard.w:
         move.buttonPressed = False
         print('deixou de pressionar')
@@ -58,33 +61,43 @@ def update():
     if move.jumpSpeed == move.jumpMax and phys.collisionVertical == False or move.buttonPressed == False and phys.collisionVertical == False:
         move.jumpSpeed = 0
         move.falling = True
-
-        #move.jumping = False
-        #alien.y += phys.gravity
         print('caindo')
-
         print('queda terminada')
-        #if move.jumping == False:
-        #    move.jumpSpeed = 0
-        #    print('resetado')
+
                     
     
-
+    
     # movimentação básica
     if keyboard.d:
-        alien.x += 5
+        shaolin_right()
+        shaolin.x += 5
+    elif not keyboard.d:
+        move.rightR = False    
     if keyboard.a:
-        alien.x -= 5
+        shaolin_left()
+        shaolin.x -= 5
+    elif not keyboard.a:
+        move.leftR = False
+
+def shaolin_right():       
+    shaolin.image = ('rightrunningshaolin')
+
+def shaolin_left():       
+    shaolin.image = ('leftrunningshaolin')
+
+def normal_stance():
+    if move.rightR == False and move.leftR == False:
+        shaolin.image = ('shaolin')
 
 
 def colisao():
-    if alien.colliderect(ground):
-        #alien.bottom = ground.top
+    if shaolin.colliderect(ground):
+        #shaolin.bottom = ground.top
         phys.collisionVertical = True
        #move.jumping = False
         move.falling = False
         print('tocou no chao')
 
         #move.jumpSpeed = 0
-    elif not alien.colliderect(ground):
+    elif not shaolin.colliderect(ground):
         phys.collisionVertical = False
