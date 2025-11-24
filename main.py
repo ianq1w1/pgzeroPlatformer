@@ -5,6 +5,9 @@ ground = Rect(10,350,500,30)
 shaolin = Actor('shaolin')
 shaolin.pos = 100, 56
 
+#leftRunningImages = ['leftrunnningshaolin', '2leftrunningshaolin']
+#rightRunningImages = ['rightrunningshaolin', '2rightrunningshaolin']
+
 WIDTH = 800
 HEIGHT = 500
 
@@ -26,6 +29,13 @@ class Physics:
     gravity = 5
     collisionVertical = False
 
+class Animation:
+    leftRunningImages = ['leftrunningshaolin', '2leftrunningshaolin']
+    rightRunningImages = ['rightrunningshaolin', '2rightrunningshaolin']
+    frame = 0
+
+
+animate = Animation()
 move = Moveset()
 phys = Physics()
 
@@ -73,22 +83,30 @@ def update():
         shaolin.x += 5
     elif not keyboard.d:
         move.rightR = False    
+      #  animate.frame = 0
     if keyboard.a:
         shaolin_left()
         shaolin.x -= 5
     elif not keyboard.a:
+      #  animate.frame = 0
         move.leftR = False
 
-def shaolin_right():       
-    shaolin.image = ('rightrunningshaolin')
+def shaolin_right():  
+    #animate.frame = 0     
+    animate.frame = (animate.frame + 1) % len(animate.rightRunningImages)
+    shaolin.image = (animate.rightRunningImages[animate.frame])
 
 def shaolin_left():       
-    shaolin.image = ('leftrunningshaolin')
+    #shaolin.image = ('leftrunningshaolin')
+    #animate.frame = 0     
+    animate.frame = (animate.frame + 1) % len(animate.leftRunningImages)
+    shaolin.image = (animate.leftRunningImages[animate.frame])
 
 def normal_stance():
     if move.rightR == False and move.leftR == False:
-        shaolin.image = ('shaolin')
-
+#
+           shaolin.image = ('shaolin')
+    
 
 def colisao():
     if shaolin.colliderect(ground):
