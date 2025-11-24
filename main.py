@@ -80,17 +80,15 @@ def update():
     # movimentação básica
     if keyboard.d:
         shaolin_right()
+        move.rightR = True 
+        move.leftR = False       
         shaolin.x += 5
-    elif not keyboard.d:
-        move.rightR = False    
       #  animate.frame = 0
     if keyboard.a:
         shaolin_left()
         shaolin.x -= 5
-    elif not keyboard.a:
-      #  animate.frame = 0
-        move.leftR = False
-
+        move.leftR = True
+        move.rightR = False
 def shaolin_right():  
     #animate.frame = 0     
     animate.frame = (animate.frame + 1) % len(animate.rightRunningImages)
@@ -103,10 +101,10 @@ def shaolin_left():
     shaolin.image = (animate.leftRunningImages[animate.frame])
 
 def normal_stance():
-    if move.rightR == False and move.leftR == False:
-#
-           shaolin.image = ('shaolin')
-    
+    if move.rightR == True:
+        shaolin.image = ('shaolin')
+    elif move.leftR == True:
+        shaolin.image = ('lshaolin')
 
 def colisao():
     if shaolin.colliderect(ground):
