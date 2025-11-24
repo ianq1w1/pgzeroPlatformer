@@ -30,8 +30,8 @@ class Physics:
     collisionVertical = False
 
 class Animation:
-    leftRunningImages = ['leftrunningshaolin', '2leftrunningshaolin']
-    rightRunningImages = ['rightrunningshaolin', '2rightrunningshaolin']
+    leftRunningImages = ['leftrunningshaolin', '1.5leftrunningshaolin', '2leftrunningshaolin']
+    rightRunningImages = ['rightrunningshaolin','1.5rightrunningshaolin', '2rightrunningshaolin']
     frame = 0
 
 
@@ -73,10 +73,7 @@ def update():
         move.falling = True
         print('caindo')
         print('queda terminada')
-
-                    
-    
-    
+ 
     # movimentação básica
     if keyboard.d:
         shaolin_right()
