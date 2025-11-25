@@ -1,6 +1,7 @@
 from pygame import Rect
 
 ground = Rect(10,350,500,30)
+#wall = Rect(550,400, 30,30)
 
 shaolin = Actor('shaolin')
 shaolin.pos = 100, 56
@@ -10,6 +11,14 @@ shaolin.pos = 100, 56
 
 WIDTH = 800
 HEIGHT = 500
+
+blocks = []
+
+class World:
+
+    block_larg = 10
+    block_alt = 0
+
 
 class Moveset:
     buttonPressed = False
@@ -28,22 +37,36 @@ class Moveset:
 class Physics:
     gravity = 5
     collisionVertical = False
+    collisionHorizontal = False
 
 class Animation:
     leftRunningImages = ['leftrunningshaolin', '1.5leftrunningshaolin', '2leftrunningshaolin']
     rightRunningImages = ['rightrunningshaolin','1.5rightrunningshaolin', '2rightrunningshaolin']
     frame = 0
+    frameCounter = 0
+    frameSpeed = 5
 
 
 animate = Animation()
 move = Moveset()
 phys = Physics()
+world1 = World()
 
+for x in range(300, 600,100):
+    block = Rect(x, 300, world1.block_larg, world1.block_alt)
+    blocks.append(block)
 
 def draw():
     screen.clear()
     shaolin.draw()
     screen.draw.rect(ground, (255, 255, 255))
+#    screen.draw.rect(wall, (255,255,255))
+    block_image = Actor('block')  # Carregue a imagem do bloco
+    
+    for block in blocks:
+        block_image.pos = block.x, block.y
+        block_image.draw()  # Desenha a imagem do bloco
+
 
 
 def update():
@@ -51,7 +74,8 @@ def update():
     normal_stance()
     if phys.collisionVertical == False:
         shaolin.y += phys.gravity
-        
+    if phys.collisionVertical == True:
+        shaolin.x 
         #print('caindo')
 #    if phys.collisionVertical == True:
         #print('no chao')
@@ -87,14 +111,22 @@ def update():
         move.leftR = True
         move.rightR = False
 def shaolin_right():  
-    #animate.frame = 0     
-    animate.frame = (animate.frame + 1) % len(animate.rightRunningImages)
+    #animate.frame = 0
+    animate.frameCounter += 1
+    if animate.frameCounter >= animate.frameSpeed:     
+        animate.frameCounter = 0
+        animate.frame = (animate.frame + 1) % len(animate.rightRunningImages)
+    
     shaolin.image = (animate.rightRunningImages[animate.frame])
 
 def shaolin_left():       
     #shaolin.image = ('leftrunningshaolin')
     #animate.frame = 0     
-    animate.frame = (animate.frame + 1) % len(animate.leftRunningImages)
+    animate.frameCounter += 1
+    if animate.frameCounter >= animate.frameSpeed:     
+        animate.frameCounter = 0
+        animate.frame = (animate.frame + 1) % len(animate.leftRunningImages)
+    
     shaolin.image = (animate.leftRunningImages[animate.frame])
 
 def normal_stance():
@@ -104,13 +136,21 @@ def normal_stance():
         shaolin.image = ('lshaolin')
 
 def colisao():
-    if shaolin.colliderect(ground):
-        #shaolin.bottom = ground.top
+    if shaolin.colliderect(ground) and shaolin.y <= ground.top :
+
         phys.collisionVertical = True
-       #move.jumping = False
         move.falling = False
         print('tocou no chao')
 
         #move.jumpSpeed = 0
     elif not shaolin.colliderect(ground):
         phys.collisionVertical = False
+
+    for block in blocks:
+        if shaolin.colliderect(block) and shaolin.y <= block.y :
+            
+            phys.collisionVertical = True
+            move.falling = False
+           # shaolin.bottom = block.top
+            print(f'Tocou no bloco em {block.x}, {block.y}')
+            break  # Interrompe a verificação após detectar colisão        
