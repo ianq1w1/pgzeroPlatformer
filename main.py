@@ -30,10 +30,14 @@ class Moveset:
     leftR = False
     rightR = False
 
+
 class Physics:
     gravity = 5
     collisionVertical = False
     collisionHorizontal = False
+    left = False
+    right = False    
+    
 
 class Animation:
     leftRunningImages = ['leftrunningshaolin', '1.5leftrunningshaolin', '2leftrunningshaolin']
@@ -87,17 +91,20 @@ def update():
             move.falling = True
 
     # ===== MOVIMENTO HORIZONTAL =====
-    if keyboard.d and phys.collisionHorizontal == False:
+    if keyboard.d:
         shaolin_right()
-        move.rightR = True 
-        move.leftR = False       
-        shaolin.x += 5
+        move.leftR = False
+        if phys.right == False:       
+            shaolin.x += 5
+            move.rightR = True 
+
       #  animate.frame = 0
-    if keyboard.a and phys.collisionHorizontal == False:
+    if keyboard.a:
         shaolin_left()
-        shaolin.x -= 5
-        move.leftR = True
         move.rightR = False
+        if not phys.left:
+            shaolin.x -= 5
+            move.leftR = True
 
     # ===== VERIFICA COLISÃO APÓS MOVER =====
     colisao()
@@ -132,9 +139,10 @@ def normal_stance():
 
 def colisao():
 
+    print(f'shaolin em {shaolin.x}, {shaolin.y}')
     phys.collisionVertical = False
     phys.collisionHorizontal = False
-
+    
     # Chão
     if shaolin.colliderect(ground):
         if shaolin.bottom >= ground.top:
@@ -155,15 +163,20 @@ def colisao():
     
     #horizontal
     if shaolin.colliderect(wall):
-        if shaolin.right >= wall.right:
-            shaolin.right = wall.right
+        if shaolin.right >= wall.left and shaolin.left < wall.left:
+            phys.right = True            
             move.running = False
             phys.collisionHorizontal = True
+            #print('bateu na direita')
             return
-        elif shaolin.left <= wall.left:
-            shaolin.left = wall.left
+        
+        elif shaolin.left <= wall.right and shaolin.right > wall.right:
+            phys.left = True
             move.running = False
             phys.collisionHorizontal = True
+            print('bateu esquerda')
             return
-
+        
+    phys.left = False
+    phys.right = False
     
