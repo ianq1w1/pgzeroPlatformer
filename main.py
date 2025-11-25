@@ -6,8 +6,6 @@ ground = Rect(10,350,500,30)
 shaolin = Actor('shaolin')
 shaolin.pos = 100, 56
 
-#leftRunningImages = ['leftrunnningshaolin', '2leftrunningshaolin']
-#rightRunningImages = ['rightrunningshaolin', '2rightrunningshaolin']
 
 WIDTH = 800
 HEIGHT = 500
@@ -17,7 +15,7 @@ blocks = []
 class World:
 
     block_larg = 10
-    block_alt = 0
+    block_alt = 30
 
 
 class Moveset:
@@ -27,9 +25,6 @@ class Moveset:
     jumpSpeed = 0
     jumpInitial = 0      # força inicial
     jumpMax = 30
-    #jumpHoldBoost = 4   # quanto continua subindo se segurar
-    #jumpMaxHoldTime = 16   # limite de "segurar para pular mais"
-    #holdCounter = 0
 
     leftR = False
     rightR = False
@@ -70,35 +65,26 @@ def draw():
 
 
 def update():
-    colisao()
+
     normal_stance()
-    if phys.collisionVertical == False:
+    # ===== APLICA GRAVIDADE =====
+    if not phys.collisionVertical and not move.jumping:
         shaolin.y += phys.gravity
-    if phys.collisionVertical == True:
-        shaolin.x 
-        #print('caindo')
-#    if phys.collisionVertical == True:
-        #print('no chao')
-    if keyboard.w and move.falling == False:
-        print('w pressionado')
-        move.jumpSpeed = move.jumpSpeed + 2
-        print(move.jumpSpeed)
-        move.buttonPressed = True
-        
-        if move.jumpSpeed != move.jumpMax  and move.falling == False:
-            shaolin.y -= 15
-
-    elif not keyboard.w:
-        move.buttonPressed = False
-        print('deixou de pressionar')
-
-    if move.jumpSpeed == move.jumpMax and phys.collisionVertical == False or move.buttonPressed == False and phys.collisionVertical == False:
-        move.jumpSpeed = 0
         move.falling = True
-        print('caindo')
-        print('queda terminada')
- 
-    # movimentação básica
+
+    # ===== PULO =====
+    if keyboard.w and not move.falling and not move.jumping:
+        move.jumping = True
+        move.jumpSpeed = 15
+    
+    if move.jumping:
+        shaolin.y -= move.jumpSpeed
+        move.jumpSpeed -= 1
+        if move.jumpSpeed <= 0:
+            move.jumping = False
+            move.falling = True
+
+    # ===== MOVIMENTO HORIZONTAL =====
     if keyboard.d:
         shaolin_right()
         move.rightR = True 
@@ -110,6 +96,12 @@ def update():
         shaolin.x -= 5
         move.leftR = True
         move.rightR = False
+
+    # ===== VERIFICA COLISÃO APÓS MOVER =====
+    colisao()
+    
+
+
 def shaolin_right():  
     #animate.frame = 0
     animate.frameCounter += 1
@@ -135,22 +127,25 @@ def normal_stance():
     elif move.leftR == True:
         shaolin.image = ('lshaolin')
 
+
 def colisao():
-    if shaolin.colliderect(ground) and shaolin.y <= ground.top :
 
-        phys.collisionVertical = True
-        move.falling = False
-        print('tocou no chao')
+    phys.collisionVertical = False
 
-        #move.jumpSpeed = 0
-    elif not shaolin.colliderect(ground):
-        phys.collisionVertical = False
-
-    for block in blocks:
-        if shaolin.colliderect(block) and shaolin.y <= block.y :
-            
-            phys.collisionVertical = True
+    # Chão
+    if shaolin.colliderect(ground):
+        if shaolin.bottom >= ground.top:
+            shaolin.bottom = ground.top
             move.falling = False
-           # shaolin.bottom = block.top
-            print(f'Tocou no bloco em {block.x}, {block.y}')
-            break  # Interrompe a verificação após detectar colisão        
+            phys.collisionVertical = True
+            return
+
+    # Blocos
+    for block in blocks:
+        if shaolin.colliderect(block):
+            # Está vindo de cima
+            if shaolin.bottom >= block.top and shaolin.y < block.top:
+                shaolin.bottom = block.top
+                move.falling = False
+                phys.collisionVertical = True
+                return
