@@ -1,7 +1,7 @@
 from pygame import Rect
 
 ground = Rect(10,350,500,30)
-#wall = Rect(550,400, 30,30)
+wall = Rect(350,300, 30,30)
 
 shaolin = Actor('shaolin')
 shaolin.pos = 100, 56
@@ -26,6 +26,7 @@ class Moveset:
     jumpInitial = 0      # força inicial
     jumpMax = 30
 
+    running = False
     leftR = False
     rightR = False
 
@@ -47,7 +48,7 @@ move = Moveset()
 phys = Physics()
 world1 = World()
 
-for x in range(300, 600,100):
+for x in range(300, 600,300):
     block = Rect(x, 300, world1.block_larg, world1.block_alt)
     blocks.append(block)
 
@@ -55,6 +56,7 @@ def draw():
     screen.clear()
     shaolin.draw()
     screen.draw.rect(ground, (255, 255, 255))
+    screen.draw.rect(wall, (255,255,255))
 #    screen.draw.rect(wall, (255,255,255))
     block_image = Actor('block')  # Carregue a imagem do bloco
     
@@ -85,13 +87,13 @@ def update():
             move.falling = True
 
     # ===== MOVIMENTO HORIZONTAL =====
-    if keyboard.d:
+    if keyboard.d and phys.collisionHorizontal == False:
         shaolin_right()
         move.rightR = True 
         move.leftR = False       
         shaolin.x += 5
       #  animate.frame = 0
-    if keyboard.a:
+    if keyboard.a and phys.collisionHorizontal == False:
         shaolin_left()
         shaolin.x -= 5
         move.leftR = True
@@ -131,6 +133,7 @@ def normal_stance():
 def colisao():
 
     phys.collisionVertical = False
+    phys.collisionHorizontal = False
 
     # Chão
     if shaolin.colliderect(ground):
@@ -149,3 +152,18 @@ def colisao():
                 move.falling = False
                 phys.collisionVertical = True
                 return
+    
+    #horizontal
+    if shaolin.colliderect(wall):
+        if shaolin.right >= wall.right:
+            shaolin.right = wall.right
+            move.running = False
+            phys.collisionHorizontal = True
+            return
+        elif shaolin.left <= wall.left:
+            shaolin.left = wall.left
+            move.running = False
+            phys.collisionHorizontal = True
+            return
+
+    
