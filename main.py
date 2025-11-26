@@ -55,7 +55,8 @@ class Player:
                     self.frameDEAD += 1
 
                 self.actor.image = self.deadplayerImages[self.frameDEAD]
-
+            else:
+                 self.actor = None
         if self.playerDead == False:   
             if not self.jumping and not phys.collisionVertical:
                 self.actor.y += phys.gravity
@@ -266,7 +267,8 @@ for x in range(300, 600, 300):
 
 def draw():
     screen.clear()
-    move.actor.draw()
+    if move.actor:
+        move.actor.draw()
     screen.draw.rect(ground, (255, 255, 255))
     screen.draw.rect(wall, (255,255,255))
     block_image = Actor('block')
@@ -290,93 +292,94 @@ def colisao():
     phys.collisionHorizontal = False
 
     # ===== COLISÃO COM CHÃO =====
-    if move.actor.colliderect(ground):
-        if move.falling and move.actor.bottom >= ground.top:
-            move.actor.bottom = ground.top
-            move.falling = False
-            phys.collisionVertical = True
-            return
-
-    # ===== COLISÃO COM BLOCOS =====
-    for block in blocks:
-        if move.actor.colliderect(block):
-
-            # Veio de cima (CAINDO)
-            if move.falling and move.actor.bottom >= block.top and move.actor.y < block.top:
-                move.actor.bottom = block.top
+    if move.actor:
+        if move.actor.colliderect(ground):
+            if move.falling and move.actor.bottom >= ground.top:
+                move.actor.bottom = ground.top
                 move.falling = False
                 phys.collisionVertical = True
                 return
 
-            # Veio de baixo (SUBINDO — bateu a cabeça)
-            if move.jumping and move.actor.top <= block.bottom and move.actor.y > block.bottom:
-                move.actor.top = block.bottom
-                move.jumping = False
-                move.falling = True
-                phys.collisionVertical = True
+        # ===== COLISÃO COM BLOCOS =====
+        for block in blocks:
+            if move.actor.colliderect(block):
+
+                # Veio de cima (CAINDO)
+                if move.falling and move.actor.bottom >= block.top and move.actor.y < block.top:
+                    move.actor.bottom = block.top
+                    move.falling = False
+                    phys.collisionVertical = True
+                    return
+
+                # Veio de baixo (SUBINDO — bateu a cabeça)
+                if move.jumping and move.actor.top <= block.bottom and move.actor.y > block.bottom:
+                    move.actor.top = block.bottom
+                    move.jumping = False
+                    move.falling = True
+                    phys.collisionVertical = True
+                    return
+
+        # ===== COLISÃO HORIZONTAL (PAREDE) =====
+        if move.actor.colliderect(wall):
+
+            # bate no lado direito do personagem
+            if move.actor.right >= wall.left  and move.actor.left < wall.left:
+                phys.right = True
+                phys.collisionHorizontal = True
                 return
+            
+            # bate no lado esquerdo
+            if move.actor.left <= wall.right and move.actor.right > wall.right:
+                phys.left = True
+                phys.collisionHorizontal = True
+                return
+            
+        if move.punch:
 
-    # ===== COLISÃO HORIZONTAL (PAREDE) =====
-    if move.actor.colliderect(wall):
+            # cria hitbox do soco
+            if move.rightR:
+                punchbox = Rect(move.actor.right, move.actor.y - 20, 25, 40)
+            else:
+                punchbox = Rect(move.actor.left - 25, move.actor.y - 20, 25, 40)
 
-        # bate no lado direito do personagem
-        if move.actor.right >= wall.left  and move.actor.left < wall.left:
-            phys.right = True
-            phys.collisionHorizontal = True
-            return
-        
-        # bate no lado esquerdo
-        if move.actor.left <= wall.right and move.actor.right > wall.right:
-            phys.left = True
-            phys.collisionHorizontal = True
-            return
-        
-    if move.punch:
+            # checa colisão com robôs
+            for r in robots:
+                robot_rect = Rect(r.actor.x - r.actor.width/2,
+                                r.actor.y - r.actor.height/2,
+                                r.actor.width,
+                                r.actor.height)
 
-        # cria hitbox do soco
-        if move.rightR:
-            punchbox = Rect(move.actor.right, move.actor.y - 20, 25, 40)
-        else:
-            punchbox = Rect(move.actor.left - 25, move.actor.y - 20, 25, 40)
-
-        # checa colisão com robôs
-        for r in robots:
-            robot_rect = Rect(r.actor.x - r.actor.width/2,
-                            r.actor.y - r.actor.height/2,
-                            r.actor.width,
-                            r.actor.height)
-
-            if punchbox.colliderect(robot_rect):
-                r.dead = True
-
-    if move.falling:
-
-        # checa colisão com robôs
-        for r in robots:
-            robot_rect = Rect(r.actor.x - r.actor.width/2,
-                            r.actor.y - r.actor.height/2,
-                            r.actor.width,
-                            r.actor.height)
-
-            if move.actor.colliderect(robot_rect):
-                if move.actor.bottom >= robot_rect.top and move.actor.y < robot_rect.top:
+                if punchbox.colliderect(robot_rect):
                     r.dead = True
 
-    for r in robots:
-        robot_rect = Rect(r.actor.x - r.actor.width/2,
-                            r.actor.y - r.actor.height/2,
-                            r.actor.width,
-                            r.actor.height)
-        
-        if move.actor.colliderect(robot_rect):
-                if r.dead == False and move.punch == False and move.actor.right >= robot_rect.left and move.actor.left < robot_rect.left:
-                    move.playerDead = True  
-                    print('tocou')
-                    return
-                if r.dead == False and move.punch == False and move.actor.left <= robot_rect.right and move.actor.right > robot_rect.right:
-                    move.playerDead = True
-                    print('tocou tambem')
-                    return
-                
-    phys.left = False
-    phys.right = False
+        if move.falling:
+
+            # checa colisão com robôs
+            for r in robots:
+                robot_rect = Rect(r.actor.x - r.actor.width/2,
+                                r.actor.y - r.actor.height/2,
+                                r.actor.width,
+                                r.actor.height)
+
+                if move.actor.colliderect(robot_rect):
+                    if move.actor.bottom >= robot_rect.top and move.actor.y < robot_rect.top:
+                        r.dead = True
+
+        for r in robots:
+            robot_rect = Rect(r.actor.x - r.actor.width/2,
+                                r.actor.y - r.actor.height/2,
+                                r.actor.width,
+                                r.actor.height)
+            
+            if move.actor.colliderect(robot_rect):
+                    if r.dead == False and move.punch == False and move.actor.right >= robot_rect.left and move.actor.left < robot_rect.left:
+                        move.playerDead = True  
+                        print('tocou')
+                        return
+                    if r.dead == False and move.punch == False and move.actor.left <= robot_rect.right and move.actor.right > robot_rect.right:
+                        move.playerDead = True
+                        print('tocou tambem')
+                        return
+                    
+        phys.left = False
+        phys.right = False
