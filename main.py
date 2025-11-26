@@ -217,8 +217,6 @@ robots = []
 
 robots.append(Robot(500, 300))
 
-
-#move = Animation()
 move = Player(100, 56)
 phys = Physics()
 world1 = World()
@@ -242,77 +240,10 @@ def draw():
 
 def update():
 
-    #print(f"posição do shaolin {shaolin.x}, {shaolin.y}")
-    # ===== GRAVIDADE =====
-
-        
-
     move.update()
-
     colisao()
-#    update_animation()
     for r in robots:
        r.update()
-
-
-def update_animation():
-
-    if move.jumping:
-        move.actor.image = "2jumplshaolin" if move.leftR else "2jumprshaolin"
-        return
-    
-    if move.state == "run_right":
-        shaolin_right()
-        return
-
-    if move.state == "run_left":
-        shaolin_left()
-        return
-    
-    if move.punch:
-        if move.leftR:
-            frames = move.punchleftImages
-        else:
-            frames = move.punchrightImages
-
-        # Atualiza frame da animação de soco
-        move.frameCounter += 1
-        if move.frameCounter >= move.frameSpeed:
-            move.frameCounter = 0
-            move.frame += 1
-
-        # Checa se acabou a animação
-        if move.frame >= len(frames):
-            move.frame = 0
-            move.punch = False  # termina o soco
-            normal_stance()     # volta para a stance normal
-        else:
-            move.actor.image = frames[move.frame]
-        return
-
-    normal_stance()
-
-def shaolin_right():  
-    move.frameCounter += 1
-    if move.frameCounter >= move.frameSpeed:
-        move.frameCounter = 0
-        move.frame = (move.frame + 1) % len(move.rightRunningImages)
-    move.actor.image = move.rightRunningImages[move.frame]
-
-def shaolin_left():       
-    move.frameCounter += 1
-    if move.frameCounter >= move.frameSpeed:
-        move.frameCounter = 0
-        move.frame = (move.frame + 1) % len(move.leftRunningImages)
-    move.actor.image = move.leftRunningImages[move.frame]
-
-def normal_stance():
-    if move.jumping or move.falling:
-        return
-    if move.rightR:
-        move.actor.image = 'shaolin'
-    elif move.leftR:
-        move.actor.image = 'lshaolin'
 
 def colisao():
 
