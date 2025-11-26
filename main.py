@@ -8,9 +8,6 @@ button_exit = Actor("exit")
 button_sound = Actor("soundon")   # começa ligado
 logo = Actor("title")
 
-
-
-
 #wall = Rect(350,300, 30,30)
 
 WIDTH = 800
@@ -342,11 +339,11 @@ def on_mouse_down(pos):
             if MenuGame.SoundOn:
                 MenuGame.SoundOn = False
                 MenuGame.SoundOff = True
-                button_sound.image = "sound_off"
+                button_sound.image = "soundoff"
             else:
                 MenuGame.SoundOn = True
                 MenuGame.SoundOff = False
-                button_sound.image = "sound_on"
+                button_sound.image = "soundon"
 
 #for x in range(300, 600, 300):
 #    block = Rect(x, 300, world1.block_larg, world1.block_alt)
@@ -394,10 +391,15 @@ def update():
     move.update()
     colisao()
 
+    if move.actor and move.actor.y > HEIGHT + 100:
+        move.playerDead = True
+
     # se o player morreu → volta para menu
     if move.playerDead and move.actor == None:
         estado_do_jogo = "menu"
         return
+    
+
 
     world1.camera_x = move.actor.x - WIDTH//2
 
