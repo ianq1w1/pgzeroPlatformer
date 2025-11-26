@@ -36,7 +36,9 @@ class Player:
         self.jumprightImages = ['jumprshaolin', '2jumprshaolin']
         self.punchleftImages = ['leftpunchshaolin', '2leftpunchshaolin']
         self.punchrightImages = ['rightpunchshaolin', '2rightpunchshaolin']
-        self.deadplayerImages = []
+        self.deadplayerImages = ['dead1shaolin', 'dead2shaolin', 'dead3shaolin', 'dead4shaolin']
+        self.frameDEAD = 0
+        self.frameSpeedDEAD = 20
         self.frameRUN = 0
         self.frameJUMP = 0
         self.framePUNCH = 0
@@ -46,104 +48,112 @@ class Player:
     def update(self):
         if self.playerDead == True:
             print('jogador morto')
+            if self.frameDEAD < len(self.deadplayerImages)-1:
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.frameDEAD += 1
 
-        if not self.jumping and not phys.collisionVertical:
-            self.actor.y += phys.gravity
-            self.falling = True
+                self.actor.image = self.deadplayerImages[self.frameDEAD]
 
-        # ===== PULO =====
-        if keyboard.w and not self.falling and not self.jumping:
-            self.jumping = True
-            self.jumpSpeed = 15
-
-        if self.jumping:
-            self.actor.y -= self.jumpSpeed
-            self.jumpSpeed -= 1
-            
-            self.state = "jump_left" if self.leftR else "jump_right"
-
-            if self.jumpSpeed <= 0:
-                self.jumping = False
+        if self.playerDead == False:   
+            if not self.jumping and not phys.collisionVertical:
+                self.actor.y += phys.gravity
                 self.falling = True
 
-        # ===== MOVIMENTO HORIZONTAL =====
-        if keyboard.d:
-            self.state = "run_right"
-            self.leftR = False
-            if not phys.right:
-                self.actor.x += 5
-                self.rightR = True
+            # ===== PULO =====
+            if keyboard.w and not self.falling and not self.jumping:
+                self.jumping = True
+                self.jumpSpeed = 15
 
-        elif keyboard.a:
-            self.state = "run_left"
-            self.rightR = False
-            if not phys.left:
-                self.actor.x -= 5
-                self.leftR = True
+            if self.jumping:
+                self.actor.y -= self.jumpSpeed
+                self.jumpSpeed -= 1
+                
+                self.state = "jump_left" if self.leftR else "jump_right"
 
-        else:
-            self.state = "idle"
+                if self.jumpSpeed <= 0:
+                    self.jumping = False
+                    self.falling = True
 
+            # ===== MOVIMENTO HORIZONTAL =====
+            if keyboard.d:
+                self.state = "run_right"
+                self.leftR = False
+                if not phys.right:
+                    self.actor.x += 5
+                    self.rightR = True
 
-        if keyboard.h and not self.punch:
-            self.punch = True
+            elif keyboard.a:
+                self.state = "run_left"
+                self.rightR = False
+                if not phys.left:
+                    self.actor.x -= 5
+                    self.leftR = True
 
-        if self.jumping:
-            frames = self.jumpleftImages if self.leftR else self.jumprightImages
-            if self.state == "jump_left" or self.state == "jump_right":
-                self.frameJUMP = 0
-                self.frameCounter = 0
-            self.frameCounter += 1
-            if self.frameCounter >= self.frameSpeed:
-                self.frameCounter = 0
-                self.frameJUMP = (self.frameJUMP + 1) % len(frames)
-
-            self.actor.image = frames[self.frameJUMP]
-            return
-    
-        if self.state == "run_right":
-            self.frameCounter += 1
-            if self.frameCounter >= self.frameSpeed:
-                self.frameCounter = 0
-                self.frameRUN = (self.frameRUN + 1) % len(self.rightRunningImages)
-            self.actor.image = self.rightRunningImages[self.frameRUN]
-            return
-        
-        if self.state == "run_left":
-            self.frameCounter += 1
-            if self.frameCounter >= self.frameSpeed:
-                self.frameCounter = 0
-                self.frameRUN = (self.frame + 1) % len(self.leftRunningImages)
-            self.actor.image = self.leftRunningImages[self.frameRUN]
-            return
-    
-        if self.punch:
-            if self.leftR:
-                frames = self.punchleftImages
             else:
-                frames = self.punchrightImages
+                self.state = "idle"
 
-            # Atualiza frame da animação de soco
-            self.frameCounter += 1
-            if self.frameCounter >= self.frameSpeed:
-                self.frameCounter = 0
-                self.framePUNCH += 1
 
-            # Checa se acabou a animação
-            if self.framePUNCH >= len(frames):
-                self.framePUNCH = 0
-                self.punch = False  # termina o soco
-                #normal_stance()     # volta para a stance normal
-            else:
-                self.actor.image = frames[self.framePUNCH]
-            return    
+            if keyboard.h and not self.punch:
+                self.punch = True
+
+            if self.jumping:
+                frames = self.jumpleftImages if self.leftR else self.jumprightImages
+                if self.state == "jump_left" or self.state == "jump_right":
+                    self.frameJUMP = 0
+                    self.frameCounter = 0
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.frameJUMP = (self.frameJUMP + 1) % len(frames)
+
+                self.actor.image = frames[self.frameJUMP]
+                return
         
-        if self.jumping or self.falling:
-            return
-        if self.rightR:
-            self.actor.image = 'shaolin'
-        elif self.leftR:
-            self.actor.image = 'lshaolin'
+            if self.state == "run_right":
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.frameRUN = (self.frameRUN + 1) % len(self.rightRunningImages)
+                self.actor.image = self.rightRunningImages[self.frameRUN]
+                return
+            
+            if self.state == "run_left":
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.frameRUN = (self.frameRUN + 1) % len(self.leftRunningImages)
+                self.actor.image = self.leftRunningImages[self.frameRUN]
+                return
+        
+            if self.punch:
+                if self.leftR:
+                    frames = self.punchleftImages
+                else:
+                    frames = self.punchrightImages
+
+                # Atualiza frame da animação de soco
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.framePUNCH += 1
+
+                # Checa se acabou a animação
+                if self.framePUNCH >= len(frames):
+                    self.framePUNCH = 0
+                    self.punch = False  # termina o soco
+                    #normal_stance()     # volta para a stance normal
+                else:
+                    self.actor.image = frames[self.framePUNCH]
+                return    
+            
+            if self.jumping or self.falling:
+                return
+            if self.rightR:
+                self.actor.image = 'shaolin'
+            elif self.leftR:
+                self.actor.image = 'lshaolin'
         
 
 
@@ -161,7 +171,7 @@ class Robot:
         self.speed = 1
         self.direction = 1
         self.origin_x = x
-        self.limit = 20
+        self.limit = 80
         self.gravity = 5
         self.falling = True
         self.right = False
@@ -174,7 +184,7 @@ class Robot:
         self.frame = 0
         self.frameDEAD = 0
         self.frameCounter = 0
-        self.frameSpeed = 8
+        self.frameSpeed = 15
 
     def update(self):
         if self.dead == True:
@@ -188,7 +198,10 @@ class Robot:
 
                 self.actor.image = self.robotDeadFrames[self.frameDEAD]
 
-            return
+            
+            else:
+                robots.remove(self)
+            return 
         if self.dead == False:
             
         # lógica de andar, limite e gravidade
@@ -241,6 +254,7 @@ class Robot:
 robots = []               
 
 robots.append(Robot(500, 300))
+robots.append(Robot(600,300))
 
 move = Player(100, 56)
 phys = Physics()
@@ -355,13 +369,14 @@ def colisao():
                             r.actor.height)
         
         if move.actor.colliderect(robot_rect):
-                if move.actor.right >= robot_rect.left and move.actor.left < robot_rect.left:
+                if r.dead == False and move.punch == False and move.actor.right >= robot_rect.left and move.actor.left < robot_rect.left:
                     move.playerDead = True  
                     print('tocou')
                     return
-                if move.actor.left <= robot_rect.right and move.actor.right > robot_rect.right:
+                if r.dead == False and move.punch == False and move.actor.left <= robot_rect.right and move.actor.right > robot_rect.right:
                     move.playerDead = True
                     print('tocou tambem')
                     return
+                
     phys.left = False
     phys.right = False
