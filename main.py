@@ -43,6 +43,48 @@ class Animation:
     frameCounter = 0
     frameSpeed = 5
 
+class Robot:
+    def __init__(self, x, y):
+        self.actor = Actor('lrobot')
+        self.actor.pos = x, y
+        self.speed = 1
+        self.direction = 1
+        self.origin_x = x
+        self.limit = 20
+        self.gravity = 5
+        self.falling = True
+
+    def update(self):
+        # lógica de andar, limite e gravidade
+        self.actor.x += self.speed * self.direction
+        if self.actor.x >= self.origin_x + self.limit:
+            self.direction = -1
+        if self.actor.x <= self.origin_x - self.limit:
+            self.direction = 1
+
+        if self.falling:
+            self.actor.y += self.gravity
+
+        if self.actor.colliderect(ground):
+            if self.actor.bottom >= ground.top:
+                self.actor.bottom = ground.top
+                self.falling = False
+        else:
+            self.falling = True
+
+        for block in blocks:
+            if self.actor.colliderect(block):
+                if self.actor.bottom >= block.top and self.actor.y < block.top:
+                    self.actor.bottom = block.top
+                    self.falling = False
+                    return
+                
+
+robots = []               
+
+robots.append(Robot(500, 300))
+
+
 animate = Animation()
 move = Moveset()
 phys = Physics()
@@ -62,6 +104,8 @@ def draw():
     for block in blocks:
         block_image.pos = block.x, block.y
         block_image.draw()
+    for r in robots:
+        r.actor.draw()
 
 def update():
 
@@ -107,6 +151,8 @@ def update():
 
     colisao()
     update_animation()
+    for r in robots:
+       r.update()
 
 def update_animation():
 
