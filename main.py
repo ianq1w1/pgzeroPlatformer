@@ -53,14 +53,42 @@ class Robot:
         self.limit = 20
         self.gravity = 5
         self.falling = True
+        self.right = False
+        self.left = False
+
+        self.robotLeftFrames = ['lrobot', '2lrobot']
+        self.robotRightFrames = ['rrobot', '2rrobot']
+        self.frame = 0
+        self.frameCounter = 0
+        self.frameSpeed = 8
 
     def update(self):
         # lógica de andar, limite e gravidade
         self.actor.x += self.speed * self.direction
         if self.actor.x >= self.origin_x + self.limit:
+            self.right = False
+            self.left = True
             self.direction = -1
         if self.actor.x <= self.origin_x - self.limit:
+            self.right = True
+            self.left = False
             self.direction = 1
+        
+        if self.left == True:
+            self.frameCounter += 1
+            if self.frameCounter >= self.frameSpeed:
+                self.frameCounter = 0
+                self.frame = (self.frame + 1) % len(self.robotLeftFrames)
+        
+            self.actor.image = self.robotLeftFrames[self.frame]
+        elif self.right == True:
+            self.frameCounter += 1
+            if self.frameCounter >= self.frameSpeed:
+                self.frameCounter = 0
+                self.frame = (self.frame + 1) % len(self.robotRightFrames)
+        
+            self.actor.image = self.robotRightFrames[self.frame]
+
 
         if self.falling:
             self.actor.y += self.gravity
