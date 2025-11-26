@@ -37,6 +37,9 @@ class Player:
         self.punchleftImages = ['leftpunchshaolin', '2leftpunchshaolin']
         self.punchrightImages = ['rightpunchshaolin', '2rightpunchshaolin']
         self.deadplayerImages = []
+        self.frameRUN = 0
+        self.frameJUMP = 0
+        self.framePUNCH = 0
         self.frame = 0
         self.frameCounter = 0
         self.frameSpeed = 8
@@ -86,23 +89,32 @@ class Player:
             self.punch = True
 
         if self.jumping:
-            self.actor.image = "2jumplshaolin" if self.leftR else "2jumprshaolin"
+            frames = self.jumpleftImages if self.leftR else self.jumprightImages
+            if self.state == "jump_left" or self.state == "jump_right":
+                self.frameJUMP = 0
+                self.frameCounter = 0
+            self.frameCounter += 1
+            if self.frameCounter >= self.frameSpeed:
+                self.frameCounter = 0
+                self.frameJUMP = (self.frameJUMP + 1) % len(frames)
+
+            self.actor.image = frames[self.frameJUMP]
             return
     
         if self.state == "run_right":
             self.frameCounter += 1
             if self.frameCounter >= self.frameSpeed:
                 self.frameCounter = 0
-                self.frame = (self.frame + 1) % len(self.rightRunningImages)
-            self.actor.image = self.rightRunningImages[self.frame]
+                self.frameRUN = (self.frameRUN + 1) % len(self.rightRunningImages)
+            self.actor.image = self.rightRunningImages[self.frameRUN]
             return
         
         if self.state == "run_left":
             self.frameCounter += 1
             if self.frameCounter >= self.frameSpeed:
                 self.frameCounter = 0
-                self.frame = (self.frame + 1) % len(self.leftRunningImages)
-            self.actor.image = self.leftRunningImages[self.frame]
+                self.frameRUN = (self.frame + 1) % len(self.leftRunningImages)
+            self.actor.image = self.leftRunningImages[self.frameRUN]
             return
     
         if self.punch:
@@ -115,15 +127,15 @@ class Player:
             self.frameCounter += 1
             if self.frameCounter >= self.frameSpeed:
                 self.frameCounter = 0
-                self.frame += 1
+                self.framePUNCH += 1
 
             # Checa se acabou a animação
-            if self.frame >= len(frames):
-                self.frame = 0
+            if self.framePUNCH >= len(frames):
+                self.framePUNCH = 0
                 self.punch = False  # termina o soco
                 #normal_stance()     # volta para a stance normal
             else:
-                self.actor.image = frames[self.frame]
+                self.actor.image = frames[self.framePUNCH]
             return    
         
         if self.jumping or self.falling:
@@ -160,57 +172,70 @@ class Robot:
         self.robotRightFrames = ['rrobot', '2rrobot']
         self.robotDeadFrames = ['robotdead1', 'robotdead2']
         self.frame = 0
+        self.frameDEAD = 0
         self.frameCounter = 0
         self.frameSpeed = 8
 
     def update(self):
         if self.dead == True:
+                # roda a animação apenas uma vez
             print('robot dead')
+            if self.frameDEAD < len(self.robotDeadFrames)-1:
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.frameDEAD += 1
+
+                self.actor.image = self.robotDeadFrames[self.frameDEAD]
+
+            return
+        if self.dead == False:
+            
         # lógica de andar, limite e gravidade
-        self.actor.x += self.speed * self.direction
-        if self.actor.x >= self.origin_x + self.limit:
-            self.right = False
-            self.left = True
-            self.direction = -1
-        if self.actor.x <= self.origin_x - self.limit:
-            self.right = True
-            self.left = False
-            self.direction = 1
-        
-        #animation
-        if self.left == True:
-            self.frameCounter += 1
-            if self.frameCounter >= self.frameSpeed:
-                self.frameCounter = 0
-                self.frame = (self.frame + 1) % len(self.robotLeftFrames)
-        
-            self.actor.image = self.robotLeftFrames[self.frame]
-        elif self.right == True:
-            self.frameCounter += 1
-            if self.frameCounter >= self.frameSpeed:
-                self.frameCounter = 0
-                self.frame = (self.frame + 1) % len(self.robotRightFrames)
-        
-            self.actor.image = self.robotRightFrames[self.frame]
+            self.actor.x += self.speed * self.direction
+            if self.actor.x >= self.origin_x + self.limit:
+                self.right = False
+                self.left = True
+                self.direction = -1
+            if self.actor.x <= self.origin_x - self.limit:
+                self.right = True
+                self.left = False
+                self.direction = 1
+            
+            #animation
+            if self.left == True:
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.frame = (self.frame + 1) % len(self.robotLeftFrames)
+            
+                self.actor.image = self.robotLeftFrames[self.frame]
+            elif self.right == True:
+                self.frameCounter += 1
+                if self.frameCounter >= self.frameSpeed:
+                    self.frameCounter = 0
+                    self.frame = (self.frame + 1) % len(self.robotRightFrames)
+            
+                self.actor.image = self.robotRightFrames[self.frame]
+            
+            #queda
+            if self.falling:
+                self.actor.y += self.gravity
 
-        #queda
-        if self.falling:
-            self.actor.y += self.gravity
-
-        #colisao
-        if self.actor.colliderect(ground):
-            if self.actor.bottom >= ground.top:
-                self.actor.bottom = ground.top
-                self.falling = False
-        else:
-            self.falling = True
-
-        for block in blocks:
-            if self.actor.colliderect(block):
-                if self.actor.bottom >= block.top and self.actor.y < block.top:
-                    self.actor.bottom = block.top
+            #colisao
+            if self.actor.colliderect(ground):
+                if self.actor.bottom >= ground.top:
+                    self.actor.bottom = ground.top
                     self.falling = False
-                    return
+            else:
+                self.falling = True
+
+            for block in blocks:
+                if self.actor.colliderect(block):
+                    if self.actor.bottom >= block.top and self.actor.y < block.top:
+                        self.actor.bottom = block.top
+                        self.falling = False
+                        return
                 
 
 robots = []               
