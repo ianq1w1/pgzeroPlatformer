@@ -41,8 +41,8 @@ class Animation:
     rightRunningImages = ['rightrunningshaolin','1.5rightrunningshaolin', '2rightrunningshaolin']
     jumpleftImages = ['jumplshaolin', '2jumplshaolin']
     jumprightImages = ['jumprshaolin', '2jumprshaolin']
-    punchleftImages = ['2leftpunchshaolin']
-    punchrightImages = [ '2rightpunchshaolin']
+    punchleftImages = ['leftpunchshaolin', '2leftpunchshaolin']
+    punchrightImages = ['rightpunchshaolin', '2rightpunchshaolin']
     frame = 0
     frameCounter = 0
     frameSpeed = 8
@@ -192,6 +192,7 @@ def update():
     for r in robots:
        r.update()
 
+
 def update_animation():
 
     if move.jumping:
@@ -297,6 +298,24 @@ def colisao():
             phys.left = True
             phys.collisionHorizontal = True
             return
+        
+    if move.punch:
+
+        # cria hitbox do soco
+        if move.rightR:
+            punchbox = Rect(shaolin.right, shaolin.y - 20, 25, 40)
+        else:
+            punchbox = Rect(shaolin.left - 25, shaolin.y - 20, 25, 40)
+
+        # checa colisão com robôs
+        for r in robots:
+            robot_rect = Rect(r.actor.x - r.actor.width/2,
+                            r.actor.y - r.actor.height/2,
+                            r.actor.width,
+                            r.actor.height)
+
+            if punchbox.colliderect(robot_rect):
+                print("TOME!")
 
     phys.left = False
     phys.right = False
