@@ -1,16 +1,43 @@
 from pygame import Rect
 
-ground = Rect(10,350,700,30)
-wall = Rect(350,300, 30,30)
+estado_do_jogo = "menu"
+
+
+button_play = Actor("play")
+button_exit = Actor("exit")
+button_sound = Actor("soundon")   # começa ligado
+logo = Actor("title")
+
+
+
+
+#wall = Rect(350,300, 30,30)
 
 WIDTH = 800
 HEIGHT = 500
 
-blocks = []
+button_play.pos = (WIDTH // 2, 250)
+button_exit.pos = (WIDTH // 2, 330)
+logo.pos = (WIDTH // 2, 120)
+button_sound.pos = (50, 50)
+
+
+scenario = images.scenario1  # carrega imagem
+map_width = scenario.get_width()
+
+GROUND_Y = 330
 
 class World:
     block_larg = 10
     block_alt = 30
+    camera_x = 0
+
+class MenuGame:
+    Play = False
+    Exit = False
+    SoundOn = True
+    SoundOff = False
+    
 
 class Player:
     def __init__(self,x,y): 
@@ -177,6 +204,7 @@ class Robot:
         self.falling = True
         self.right = False
         self.left = False
+        
         self.dead = False
 
         self.robotLeftFrames = ['lrobot', '2lrobot']
@@ -252,39 +280,130 @@ class Robot:
                         return
                 
 
-robots = []               
 
-robots.append(Robot(500, 300))
-robots.append(Robot(600,300))
 
-move = Player(100, 56)
-phys = Physics()
-world1 = World()
+def start_new_game():
+    global move, robots, world1, phys, blocks, ground
 
-for x in range(300, 600, 300):
-    block = Rect(x, 300, world1.block_larg, world1.block_alt)
-    blocks.append(block)
+    move = Player(100, 56)
+    phys = Physics()
+    world1 = World()
+
+    robots = []
+    robots.append(Robot(500, 300))
+    robots.append(Robot(600,300))
+    robots.append(Robot(800, 300))
+    robots.append(Robot(750, 300))
+    robots.append(Robot(1000, 300))
+
+    # reconstruir blocos
+    blocks = []
+    ground = Rect(10,350,150,30)
+    for x in range(300, map_width, 30):
+        blocks.append(Rect(x, GROUND_Y, 30, 30))
+
+    world1.camera_x = 0
+
+def draw_menu():
+
+    screen.clear()
+    screen.blit("menubg", (0, 0))  # se tiver um fundo
+
+    logo.draw()
+
+    button_play.draw()
+    button_exit.draw()
+    button_sound.draw()
+
+def update_menu():
+    global estado_do_jogo
+    if keyboard.r:
+        start_new_game()
+        estado_do_jogo = "jogo"
+
+
+def on_mouse_down(pos):
+    global estado_do_jogo
+
+    if estado_do_jogo == "menu":
+
+        # BOTÃO PLAY
+        if button_play.collidepoint(pos):
+            start_new_game()
+            estado_do_jogo = "jogo"
+            return
+
+        # BOTÃO EXIT
+        if button_exit.collidepoint(pos):
+            exit()
+
+        # BOTÃO SOUND
+        if button_sound.collidepoint(pos):
+            if MenuGame.SoundOn:
+                MenuGame.SoundOn = False
+                MenuGame.SoundOff = True
+                button_sound.image = "sound_off"
+            else:
+                MenuGame.SoundOn = True
+                MenuGame.SoundOff = False
+                button_sound.image = "sound_on"
+
+#for x in range(300, 600, 300):
+#    block = Rect(x, 300, world1.block_larg, world1.block_alt)
+#    blocks.append(block)
+
 
 def draw():
-    screen.clear()
-    if move.actor:
-        move.actor.draw()
-    screen.draw.rect(ground, (255, 255, 255))
-    screen.draw.rect(wall, (255,255,255))
-    block_image = Actor('block')
-    
-    for block in blocks:
-        block_image.pos = block.x, block.y
-        block_image.draw()
-    for r in robots:
-        r.actor.draw()
+    if estado_do_jogo == "menu":
+        draw_menu()
+        return
+    elif estado_do_jogo == "jogo":
+        screen.clear()
+        # background rolando com a câmera
+        screen.blit("scenario1", (-world1.camera_x, 0))
+
+        # player
+        if move.actor:
+            screen.blit(move.actor.image, (move.actor.x - world1.camera_x - move.actor.width/2,
+                                        move.actor.y - move.actor.height/2))
+
+        # chão
+        screen.draw.filled_rect(Rect(ground.x - world1.camera_x, ground.y, ground.width, ground.height), (255,255,255))
+
+        # blocos
+        for block in blocks:
+            screen.blit("block", (block.x - world1.camera_x, block.y))
+
+        # robôs
+        for r in robots:
+            screen.blit(r.actor.image,
+                        (r.actor.x - world1.camera_x - r.actor.width/2,
+                        r.actor.y - r.actor.height/2))
+
+
 
 def update():
+    global estado_do_jogo
+
+    if estado_do_jogo == "menu":
+        update_menu()
+        return
+
+    # ======= ESTAMOS NO JOGO ========
 
     move.update()
     colisao()
+
+    # se o player morreu → volta para menu
+    if move.playerDead and move.actor == None:
+        estado_do_jogo = "menu"
+        return
+
+    world1.camera_x = move.actor.x - WIDTH//2
+
     for r in robots:
-       r.update()
+        r.update()
+
 
 def colisao():
 
@@ -320,7 +439,7 @@ def colisao():
                     return
 
         # ===== COLISÃO HORIZONTAL (PAREDE) =====
-        if move.actor.colliderect(wall):
+        """if move.actor.colliderect(wall):
 
             # bate no lado direito do personagem
             if move.actor.right >= wall.left  and move.actor.left < wall.left:
@@ -332,8 +451,7 @@ def colisao():
             if move.actor.left <= wall.right and move.actor.right > wall.right:
                 phys.left = True
                 phys.collisionHorizontal = True
-                return
-            
+                return"""     
         if move.punch:
 
             # cria hitbox do soco
