@@ -26,6 +26,8 @@ class Moveset:
     leftR = False
     rightR = False
 
+    punch = False
+
 class Physics:
     gravity = 5
     collisionVertical = False
@@ -39,9 +41,11 @@ class Animation:
     rightRunningImages = ['rightrunningshaolin','1.5rightrunningshaolin', '2rightrunningshaolin']
     jumpleftImages = ['jumplshaolin', '2jumplshaolin']
     jumprightImages = ['jumprshaolin', '2jumprshaolin']
+    punchleftImages = ['2leftpunchshaolin']
+    punchrightImages = [ '2rightpunchshaolin']
     frame = 0
     frameCounter = 0
-    frameSpeed = 5
+    frameSpeed = 8
 
 class Robot:
     def __init__(self, x, y):
@@ -177,6 +181,12 @@ def update():
     else:
         animate.state = "idle"
 
+
+    if keyboard.h and not move.punch:
+        move.punch = True
+        
+
+
     colisao()
     update_animation()
     for r in robots:
@@ -194,6 +204,27 @@ def update_animation():
 
     if animate.state == "run_left":
         shaolin_left()
+        return
+    
+    if move.punch:
+        if move.leftR:
+            frames = animate.punchleftImages
+        else:
+            frames = animate.punchrightImages
+
+        # Atualiza frame da animação de soco
+        animate.frameCounter += 1
+        if animate.frameCounter >= animate.frameSpeed:
+            animate.frameCounter = 0
+            animate.frame += 1
+
+        # Checa se acabou a animação
+        if animate.frame >= len(frames):
+            animate.frame = 0
+            move.punch = False  # termina o soco
+            normal_stance()     # volta para a stance normal
+        else:
+            shaolin.image = frames[animate.frame]
         return
 
     normal_stance()
