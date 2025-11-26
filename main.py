@@ -1,5 +1,8 @@
 from pygame import Rect
 
+music.set_volume(0.5)   # opcional
+music.play("theme")
+
 estado_do_jogo = "menu"
 
 
@@ -301,6 +304,9 @@ def start_new_game():
 
     world1.camera_x = 0
 
+    if MenuGame.SoundOn:
+        music.play("theme")
+
 def draw_menu():
 
     screen.clear()
@@ -314,7 +320,7 @@ def draw_menu():
 
 def update_menu():
     global estado_do_jogo
-    if keyboard.r:
+    if keyboard.RETURN:
         start_new_game()
         estado_do_jogo = "jogo"
 
@@ -340,10 +346,12 @@ def on_mouse_down(pos):
                 MenuGame.SoundOn = False
                 MenuGame.SoundOff = True
                 button_sound.image = "soundoff"
+                music.stop()
             else:
                 MenuGame.SoundOn = True
                 MenuGame.SoundOff = False
                 button_sound.image = "soundon"
+                music.play("theme")
 
 #for x in range(300, 600, 300):
 #    block = Rect(x, 300, world1.block_larg, world1.block_alt)
