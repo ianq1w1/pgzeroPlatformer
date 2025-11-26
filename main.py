@@ -1,6 +1,6 @@
 from pygame import Rect
 
-ground = Rect(10,350,500,30)
+ground = Rect(10,350,700,30)
 wall = Rect(350,300, 30,30)
 
 shaolin = Actor('shaolin')
