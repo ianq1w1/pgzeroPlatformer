@@ -141,6 +141,7 @@ def draw():
 
 def update():
 
+    print(f"posição do shaolin {shaolin.x}, {shaolin.y}")
     # ===== GRAVIDADE =====
     if not move.jumping and not phys.collisionVertical:
         shaolin.y += phys.gravity
@@ -316,6 +317,19 @@ def colisao():
 
             if punchbox.colliderect(robot_rect):
                 print("TOME!")
+
+    if move.falling:
+
+        # checa colisão com robôs
+        for r in robots:
+            robot_rect = Rect(r.actor.x - r.actor.width/2,
+                            r.actor.y - r.actor.height/2,
+                            r.actor.width,
+                            r.actor.height)
+
+            if shaolin.colliderect(robot_rect):
+                if shaolin.bottom >= robot_rect.top and shaolin.y < robot_rect.top:
+                    print("TOME! na CABECAAAA")
 
     phys.left = False
     phys.right = False
