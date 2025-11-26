@@ -59,9 +59,11 @@ class Robot:
         self.falling = True
         self.right = False
         self.left = False
+        self.dead = False
 
         self.robotLeftFrames = ['lrobot', '2lrobot']
         self.robotRightFrames = ['rrobot', '2rrobot']
+        self.robotDeadFrames = ['robotdead1', 'robotdead2']
         self.frame = 0
         self.frameCounter = 0
         self.frameSpeed = 8
