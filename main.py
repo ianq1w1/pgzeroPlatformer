@@ -479,6 +479,7 @@ def colisao():
 
                 if punchbox.colliderect(robot_rect):
                     r.dead = True
+                    sounds.botdeath.play()
 
         if move.falling:
 
@@ -492,6 +493,7 @@ def colisao():
                 if move.actor.colliderect(robot_rect):
                     if move.actor.bottom >= robot_rect.top and move.actor.y < robot_rect.top:
                         r.dead = True
+                        sounds.botdeath.play()
 
         for r in robots:
             robot_rect = Rect(r.actor.x - r.actor.width/2,
